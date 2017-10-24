@@ -1,4 +1,5 @@
 #include "Vehicle.h"
+#include "const.h"
 #include <cmath>
 
 Vehicle::Vehicle(int id, double x, double y, double vx, double vy, double s, double d)
@@ -12,3 +13,18 @@ Vehicle::Vehicle(const std::vector<double> &sensorFusion)
     vy(sensorFusion[4]),
     s(sensorFusion[5]),
     d(sensorFusion[6]) {}
+
+bool Vehicle::isValid() {
+  return MIN_D < this->d && this->d < MAX_D;
+}
+
+vector<Vehicle> getValidVehicles(vector<vector<double>> &sensorFusionList) {
+  vector<Vehicle> vehicles;
+  for (const vector<double> &sensorFusion : sensorFusionList) {
+    Vehicle vehicle(sensorFusion);
+    if (vehicle.isValid()) {
+      vehicles.push_back(vehicle);
+    }
+  }
+  return vehicles;
+}

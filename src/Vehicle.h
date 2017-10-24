@@ -3,6 +3,8 @@
 
 #include <vector>
 
+using namespace std;
+
 class Vehicle {
 public:
     const int id;
@@ -15,9 +17,12 @@ public:
 
     Vehicle(int id, double x, double y, double vx, double vy, double s, double d);
 
-    explicit Vehicle(const std::vector<double> &sensorFusion);
+    explicit Vehicle(const vector<double> &sensorFusion);
+
+    bool isValid();
 
 };
 
+vector<Vehicle> getValidVehicles(vector<vector<double>> &sensorFusionList);
 
 #endif //PATH_PLANNING_VEHICLE_H
