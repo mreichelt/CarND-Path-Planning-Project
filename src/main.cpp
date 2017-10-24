@@ -228,6 +228,18 @@ int main() {
             vector<double> next_x_vals;
             vector<double> next_y_vals;
 
+            double ref_speed_mph = 49.5;
+            double ref_speed = ref_speed_mph * 0.44704;
+
+            int lane = 1;
+            double d = 2 + lane * 4;
+
+            for (int i = 0; i < 50; i++) {
+              double s = car_s + (i + 1) * 0.02 * ref_speed;
+              auto xy = getXY(s, d, map_waypoints_s, map_waypoints_x, map_waypoints_y);
+              next_x_vals.push_back(xy[0]);
+              next_y_vals.push_back(xy[1]);
+            }
 
             // TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
             msgJson["next_x"] = next_x_vals;
