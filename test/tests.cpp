@@ -23,7 +23,7 @@ TEST_CASE("parse basic sensor fusion vector") {
   REQUIRE(vehicle.d == Approx(10.02528));
 }
 
-TEST_CASE("parse id correctly when int is not correctly parsed by JSON") {
+TEST_CASE("parse id correctly when int is not correctly parsed due to floating point issues") {
   Vehicle vehicle((vector<double>) {5.9999999999999,
                                     910.4965,
                                     1124.818,
