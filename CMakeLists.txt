@@ -1,6 +1,6 @@
 project(Path_Planning)
 
-cmake_minimum_required(VERSION 3.2.2)
+cmake_minimum_required(VERSION 3.5)
 
 add_definitions(-std=c++11)
 
