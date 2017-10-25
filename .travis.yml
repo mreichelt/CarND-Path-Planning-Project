@@ -1,8 +1,12 @@
+sudo: required
+
 language: cpp
 
+services:
+  - docker
+
+install:
+  - docker pull mreichelt/carnd-cpp
+
 script:
-  - mkdir build
-  - cd build
-  - cmake ..
-  - make -j4
-  - ./test/Test
+  - docker run -v "`pwd`:/project" mreichelt/carnd-cpp /bin/bash -c 'mkdir -p build && cd build && cmake .. && make -j4 && ./test/Test'
