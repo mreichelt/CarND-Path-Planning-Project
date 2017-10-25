@@ -2,6 +2,7 @@
 
 #include "catch.hpp"
 #include "../src/Vehicle.h"
+#include "../src/tools.h"
 
 using namespace std;
 
@@ -97,4 +98,16 @@ TEST_CASE("vehicle with high d should be invalid") {
 TEST_CASE("vehicle with regular d should be valid") {
   Vehicle vehicle(0, 0, 0, 0, 0, 0, 8);
   REQUIRE(vehicle.isValid());
+}
+
+TEST_CASE("convert 50 miles/hour to meters/second") {
+  REQUIRE(mph2mps(50) == Approx(22.352));
+}
+
+TEST_CASE("convert 2.24 miles/hour to meters/second") {
+  REQUIRE(mph2mps(2.23694) == Approx(1));
+}
+
+TEST_CASE("convert -2.24 miles/hour to meters/second") {
+  REQUIRE(mph2mps(-2.23694) == Approx(-1));
 }

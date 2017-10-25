@@ -9,15 +9,12 @@
 #include "Eigen-3.3/Eigen/QR"
 #include "json.hpp"
 #include "spline.h"
+#include "tools.h"
 
 using namespace std;
 
 // for convenience
 using json = nlohmann::json;
-
-double deg2rad(double x) { return x * M_PI / 180; }
-
-double rad2deg(double x) { return x * 180 / M_PI; }
 
 // Checks if the SocketIO event has JSON data.
 // If there is data the JSON object in string format will be returned,
@@ -211,8 +208,8 @@ int main() {
             double car_y = j[1]["y"];
             double car_s = j[1]["s"];
             double car_d = j[1]["d"];
-            double car_yaw = j[1]["yaw"];
-            double car_speed = j[1]["speed"];
+            double car_yaw = deg2rad(j[1]["yaw"]);
+            double car_speed = mph2mps(j[1]["speed"]);
 
             // Previous path data given to the Planner
             vector<double> previous_path_x = j[1]["previous_path_x"];
@@ -229,8 +226,7 @@ int main() {
             vector<double> next_x_vals;
             vector<double> next_y_vals;
 
-            double ref_speed_mph = 49.5;
-            double ref_speed = ref_speed_mph * 0.44704;
+            double ref_speed = mph2mps(49.5);
 
             int lane = 1;
             double d = 2 + lane * 4;
