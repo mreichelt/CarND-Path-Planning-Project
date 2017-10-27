@@ -10,10 +10,9 @@
 #include "json.hpp"
 #include "spline.h"
 #include "tools.h"
+#include "const.h"
 
 using namespace std;
-
-// for convenience
 using json = nlohmann::json;
 
 // Checks if the SocketIO event has JSON data.
@@ -98,30 +97,81 @@ int main() {
             double end_path_d = j[1]["end_path_d"];
             vector<vector<double>> sensor_fusion = j[1]["sensor_fusion"];
 
-            json msgJson;
 
-            vector<double> next_x_vals;
-            vector<double> next_y_vals;
+            vector<double> ptsx, ptsy;
 
-            double ref_speed = mph2mps(49.5);
+            size_t previousPathSize = previous_path_x.size();
 
             int lane = 1;
             double d = 2 + lane * 4;
+            double ref_speed = MAX_SPEED;
 
-            for (int i = 0; i < 50; i++) {
-              double s = car_s + (i + 1) * 0.02 * ref_speed;
-              auto xy = getXY(s, d, map_waypoints_s, map_waypoints_x, map_waypoints_y);
-              next_x_vals.push_back(xy[0]);
-              next_y_vals.push_back(xy[1]);
+            // generate initial 2 waypoints
+            double x1, y1, ref_x, ref_y;
+            double ref_yaw = car_yaw;
+            if (previousPathSize < 2) {
+              x1 = car_x - cos(car_yaw);
+              y1 = car_y - sin(car_yaw);
+              ref_x = car_x;
+              ref_y = car_y;
+            } else {
+              x1 = previous_path_x[previousPathSize - 2];
+              y1 = previous_path_y[previousPathSize - 2];
+              ref_x = previous_path_x[previousPathSize - 1];
+              ref_y = previous_path_y[previousPathSize - 1];
+              ref_yaw = atan2(ref_y - y1, ref_x - x1);
+            }
+            ptsx.push_back(x1);
+            ptsx.push_back(ref_x);
+            ptsy.push_back(y1);
+            ptsy.push_back(ref_y);
+
+            // generate sparse target waypoints
+            double meters = 30.0;
+            for (int i = 1; i <= 3; i++) {
+              vector<double> xy = getXY(car_s + meters * i, d, map_waypoints_s, map_waypoints_x, map_waypoints_y);
+              ptsx.push_back(xy[0]);
+              ptsy.push_back(xy[1]);
             }
 
+            // transform target waypoints to vehicle rotation+location
+            for (int i = 0; i < ptsx.size(); i++) {
+              double diff_x = ptsx[i] - ref_x;
+              double diff_y = ptsy[i] - ref_y;
+              ptsx[i] = diff_x * cos(-ref_yaw) - diff_y * sin(-ref_yaw);
+              ptsy[i] = diff_x * sin(-ref_yaw) + diff_y * cos(-ref_yaw);
+            }
+
+            tk::spline s;
+            s.set_points(ptsx, ptsy);
+
+            vector<double> next_x_vals(previous_path_x), next_y_vals(previous_path_y);
+            double target_x = 30.0;
+            double target_y = s(target_x);
+            double target_dist = sqrt(target_x * target_x + target_y * target_y);
+            double x_add_on = 0;
+
+            for (int i = 0; i < N_WAYPOINTS - previousPathSize; i++) {
+              double n = target_dist / (T * ref_speed);
+              double x_point = x_add_on + target_x / n;
+              double y_point = s(x_point);
+              x_add_on = x_point;
+
+              // transform back to original coordinate system
+              double x = x_point * cos(ref_yaw) - y_point * sin(ref_yaw);
+              double y = x_point * sin(ref_yaw) + y_point * cos(ref_yaw);
+              x += ref_x;
+              y += ref_y;
+              next_x_vals.push_back(x);
+              next_y_vals.push_back(y);
+            }
+
+            // build and send JSON message to simulator
+            json msgJson;
             msgJson["next_x"] = next_x_vals;
             msgJson["next_y"] = next_y_vals;
-
             string msg = "42[\"control\"," + msgJson.dump() + "]";
-
             ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
-
           }
         } else {
           // Manual driving

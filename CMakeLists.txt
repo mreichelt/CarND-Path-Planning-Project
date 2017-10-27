@@ -19,7 +19,7 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 
 # build path planning executable in this directory
-set(sources src/main.cpp src/tools.cpp src/Vehicle.cpp src/spline.h)
+set(sources src/main.cpp src/tools.cpp src/Vehicle.cpp src/spline.h src/const.h)
 add_executable(path_planning ${sources})
 target_link_libraries(path_planning z ssl uv uWS)
 
