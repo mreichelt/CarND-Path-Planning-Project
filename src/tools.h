@@ -28,4 +28,16 @@ vector<double> getFrenet(double x, double y, double theta, const vector<double> 
 vector<double>
 getXY(double s, double d, const vector<double> &maps_s, const vector<double> &maps_x, const vector<double> &maps_y);
 
+/**
+ * Transform a list of waypoints (given by x_list, y_list) so the new origin is at {@code origin} with an angle of 0.
+ */
+void transform_coordinates(vector<double> &x_list, vector<double> &y_list, const vector<double> &origin, double theta);
+
+/**
+ * Restore a list of waypoints that have been transformed into another coordinate system.
+ */
+void reverse_transform_coordinates(vector<double> &x_list, vector<double> &y_list, const vector<double> &origin,
+                                   double theta);
+
+
 #endif //PATH_PLANNING_TOOLS_H

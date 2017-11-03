@@ -120,3 +120,34 @@ getXY(double s, double d, const vector<double> &maps_s, const vector<double> &ma
 
   return {x, y};
 }
+
+void transform_coordinates(vector<double> &x_list, vector<double> &y_list, const vector<double> &origin, double theta) {
+  for (size_t i = 0; i < x_list.size(); i++) {
+    // translate
+    x_list[i] -= origin[0];
+    y_list[i] -= origin[1];
+
+    // rotate
+    const double
+      x = x_list[i],
+      y = y_list[i];
+    x_list[i] = x * cos(theta) + y * sin(theta);
+    y_list[i] = -x * sin(theta) + y * cos(theta);
+  }
+}
+
+void reverse_transform_coordinates(vector<double> &x_list, vector<double> &y_list, const vector<double> &origin,
+                                   double theta) {
+  for (size_t i = 0; i < x_list.size(); i++) {
+    // rotate back
+    const double
+      x = x_list[i],
+      y = y_list[i];
+    x_list[i] = x * cos(-theta) + y * sin(-theta);
+    y_list[i] = -x * sin(-theta) + y * cos(-theta);
+
+    // translate back
+    x_list[i] += origin[0];
+    y_list[i] += origin[1];
+  }
+}

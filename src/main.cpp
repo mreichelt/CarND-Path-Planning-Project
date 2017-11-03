@@ -134,37 +134,36 @@ int main() {
               ptsy.push_back(xy[1]);
             }
 
-            // transform target waypoints to vehicle rotation+location
-            for (int i = 0; i < ptsx.size(); i++) {
-              double diff_x = ptsx[i] - ref_x;
-              double diff_y = ptsy[i] - ref_y;
-              ptsx[i] = diff_x * cos(-ref_yaw) - diff_y * sin(-ref_yaw);
-              ptsy[i] = diff_x * sin(-ref_yaw) + diff_y * cos(-ref_yaw);
-            }
+            // place origin into the car's location so we can work with spline
+            transform_coordinates(ptsx, ptsy, {ref_x, ref_y}, ref_yaw);
 
             tk::spline s;
             s.set_points(ptsx, ptsy);
 
-            vector<double> next_x_vals(previous_path_x), next_y_vals(previous_path_y);
+            vector<double>
+              next_x_vals(previous_path_x),
+              next_y_vals(previous_path_y),
+              additional_x,
+              additional_y;
+
             double target_x = 30.0;
             double target_y = s(target_x);
             double target_dist = sqrt(target_x * target_x + target_y * target_y);
-            double x_add_on = 0;
+            double x = 0;
 
             for (int i = 0; i < N_WAYPOINTS - previousPathSize; i++) {
               double n = target_dist / (T * ref_speed);
-              double x_point = x_add_on + target_x / n;
-              double y_point = s(x_point);
-              x_add_on = x_point;
-
-              // transform back to original coordinate system
-              double x = x_point * cos(ref_yaw) - y_point * sin(ref_yaw);
-              double y = x_point * sin(ref_yaw) + y_point * cos(ref_yaw);
-              x += ref_x;
-              y += ref_y;
-              next_x_vals.push_back(x);
-              next_y_vals.push_back(y);
+              x += target_x / n;
+              additional_x.push_back(x);
+              additional_y.push_back(s(x));
             }
+
+            // restore original origin and rotation
+            reverse_transform_coordinates(additional_x, additional_y, {ref_x, ref_y}, ref_yaw);
+
+            // add additional waypoints to next waypoints
+            next_x_vals.insert(next_x_vals.end(), additional_x.begin(), additional_x.end());
+            next_y_vals.insert(next_y_vals.end(), additional_y.begin(), additional_y.end());
 
             // build and send JSON message to simulator
             json msgJson;

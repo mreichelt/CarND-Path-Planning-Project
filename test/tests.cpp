@@ -111,3 +111,54 @@ TEST_CASE("convert 2.24 miles/hour to meters/second") {
 TEST_CASE("convert -2.24 miles/hour to meters/second") {
   REQUIRE(mph2mps(-2.23694) == Approx(-1));
 }
+
+TEST_CASE("simple forward transformation") {
+  vector<double>
+    x = {1.0},
+    y = {1.0};
+  transform_coordinates(x, y, {1.0, 1.0}, 0.0);
+  REQUIRE(x[0] == Approx(0.0));
+  REQUIRE(y[0] == Approx(0.0));
+}
+
+TEST_CASE("simple forward transformation that includes rotation") {
+  vector<double>
+    x = {2.0},
+    y = {2.0};
+  transform_coordinates(x, y, {1.0, 1.0}, M_PI_4);
+  REQUIRE(x[0] == Approx(sqrt(2)));
+  REQUIRE(y[0] == Approx(0.0));
+}
+
+TEST_CASE("forward and reverse transformation") {
+  vector<double>
+    x = {2.0},
+    y = {2.0};
+  transform_coordinates(x, y, {1.0, 1.0}, M_PI_4);
+  REQUIRE(x[0] == Approx(sqrt(2)));
+  REQUIRE(y[0] == Approx(0.0));
+
+  reverse_transform_coordinates(x, y, {1.0, 1.0}, M_PI_4);
+  REQUIRE(x[0] == Approx(2.0));
+  REQUIRE(y[0] == Approx(2.0));
+}
+
+void require_approx_same(const vector<double> &actual, const vector<double> &expected) {
+  REQUIRE(actual.size() == expected.size());
+  for (size_t i = 0; i < expected.size(); i++) {
+    REQUIRE(actual[i] == Approx(expected[i]));
+  }
+}
+
+TEST_CASE("forward and reverse transform multiple coordinates") {
+  vector<double>
+    x = {1.0, 1.0, 1.0},
+    y = {1.0, 2.0, 3.0};
+  transform_coordinates(x, y, {1.0, 1.0}, M_PI_2);
+  require_approx_same(x, {0.0, 1.0, 2.0});
+  require_approx_same(y, {0.0, 0.0, 0.0});
+
+  reverse_transform_coordinates(x, y, {1.0, 1.0}, M_PI_2);
+  require_approx_same(x, {1.0, 1.0, 1.0});
+  require_approx_same(y, {1.0, 2.0, 3.0});
+}
