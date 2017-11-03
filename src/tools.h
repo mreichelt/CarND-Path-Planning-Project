@@ -39,5 +39,6 @@ void transform_coordinates(vector<double> &x_list, vector<double> &y_list, const
 void reverse_transform_coordinates(vector<double> &x_list, vector<double> &y_list, const vector<double> &origin,
                                    double theta);
 
+double clip(double d, double lower, double upper);
 
 #endif //PATH_PLANNING_TOOLS_H

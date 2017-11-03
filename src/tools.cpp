@@ -151,3 +151,7 @@ void reverse_transform_coordinates(vector<double> &x_list, vector<double> &y_lis
     y_list[i] += origin[1];
   }
 }
+
+double clip(double d, double lower, double upper) {
+  return max(lower, min(d, upper));
+}

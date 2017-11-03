@@ -18,6 +18,20 @@ bool Vehicle::isValid() {
   return MIN_D < this->d && this->d < MAX_D;
 }
 
+double Vehicle::getSpeed() {
+  return sqrt(vx * vx + vy * vy);
+}
+
+bool Vehicle::isInLane(int lane) {
+  double lane_start = LANE_WIDTH * lane;
+  double lane_end = lane_start + LANE_WIDTH;
+  return d > lane_start && d <= lane_end;
+}
+
+double Vehicle::getPredictedS(double delta_t) {
+  return s + getSpeed() * delta_t;
+}
+
 vector<Vehicle> getValidVehicles(vector<vector<double>> &sensorFusionList) {
   vector<Vehicle> vehicles;
   for (const vector<double> &sensorFusion : sensorFusionList) {

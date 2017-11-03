@@ -21,6 +21,15 @@ public:
 
     bool isValid();
 
+    double getSpeed();
+
+    bool isInLane(int lane);
+
+    /**
+     * Get the predicted {@code s} position after a certain amount of time assuming constant vehicle speed and 0 angle.
+     */
+    double getPredictedS(double delta_t);
+
 };
 
 vector<Vehicle> getValidVehicles(vector<vector<double>> &sensorFusionList);

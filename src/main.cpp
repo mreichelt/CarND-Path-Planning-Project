@@ -11,6 +11,7 @@
 #include "spline.h"
 #include "tools.h"
 #include "const.h"
+#include "Vehicle.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -67,7 +68,9 @@ int main() {
     map_waypoints_dy.push_back(d_y);
   }
 
-  h.onMessage([&map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy](
+  int lane = 1;
+
+  h.onMessage([&lane, &map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy](
     uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
     uWS::OpCode opCode) {
       // "42" at the start of the message means there's a websocket message event.
@@ -95,16 +98,43 @@ int main() {
             vector<double> previous_path_y = j[1]["previous_path_y"];
             double end_path_s = j[1]["end_path_s"];
             double end_path_d = j[1]["end_path_d"];
-            vector<vector<double>> sensor_fusion = j[1]["sensor_fusion"];
+            vector<vector<double>> raw_sensor_fusion = j[1]["sensor_fusion"];
+
+            // convert raw sensor fusion data to something a little bit improved
+            vector<Vehicle> vehicles = getValidVehicles(raw_sensor_fusion);
 
 
             vector<double> ptsx, ptsy;
 
             size_t previousPathSize = previous_path_x.size();
 
-            int lane = 1;
+            bool too_close = false;
             double d = 2 + lane * 4;
-            double ref_speed = MAX_SPEED;
+
+            if (previousPathSize > 0) {
+              car_s = end_path_s;
+            }
+
+            for (Vehicle vehicle : vehicles) {
+              if (vehicle.isInLane(lane)) {
+                double predicted_s = vehicle.getPredictedS(previousPathSize * T);
+                if (predicted_s > car_s && (predicted_s - car_s) < 30.0) {
+                  too_close = true;
+                }
+              }
+            }
+
+            double ref_speed = car_speed;
+            double velocity_change = mph2mps(1);
+            if (too_close) {
+              if (lane > 0) {
+                lane = 0;
+              }
+              ref_speed -= velocity_change;
+            } else {
+              ref_speed += velocity_change;
+            }
+            ref_speed = clip(ref_speed, 0.0, MAX_SPEED);
 
             // generate initial 2 waypoints
             double x1, y1, ref_x, ref_y;
