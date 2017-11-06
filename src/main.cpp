@@ -124,21 +124,11 @@ int main() {
               }
             }
 
-            double ref_speed = car_speed;
-            double velocity_change = mph2mps(1);
-            if (too_close) {
-              if (lane > 0) {
-                lane = 0;
-              }
-              ref_speed -= velocity_change;
-            } else {
-              ref_speed += velocity_change;
-            }
-            ref_speed = clip(ref_speed, 0.0, MAX_SPEED);
 
             // generate initial 2 waypoints
             double x1, y1, ref_x, ref_y;
             double ref_yaw = car_yaw;
+            double end_car_speed = car_speed;
             if (previousPathSize < 2) {
               x1 = car_x - cos(car_yaw);
               y1 = car_y - sin(car_yaw);
@@ -150,14 +140,30 @@ int main() {
               ref_x = previous_path_x[previousPathSize - 1];
               ref_y = previous_path_y[previousPathSize - 1];
               ref_yaw = atan2(ref_y - y1, ref_x - x1);
+              double dist = distance(x1, y1, ref_x, ref_y);
+              end_car_speed = dist / T;
             }
             ptsx.push_back(x1);
             ptsx.push_back(ref_x);
             ptsy.push_back(y1);
             ptsy.push_back(ref_y);
 
+            cout << "end_path_d: " << end_path_d << endl;
+
+            double ref_speed = end_car_speed;
+            double velocity_change = mph2mps(0.3);
+            if (too_close) {
+              if (lane > 0) {
+                lane = 0;
+              }
+              ref_speed -= velocity_change;
+            } else {
+              ref_speed += velocity_change;
+            }
+            ref_speed = clip(ref_speed, MIN_SPEED, MAX_SPEED);
+
             // generate sparse target waypoints
-            double meters = 30.0;
+            double meters = 15.0;
             for (int i = 1; i <= 3; i++) {
               vector<double> xy = getXY(car_s + meters * i, d, map_waypoints_s, map_waypoints_x, map_waypoints_y);
               ptsx.push_back(xy[0]);
@@ -180,10 +186,11 @@ int main() {
             double target_y = s(target_x);
             double target_dist = sqrt(target_x * target_x + target_y * target_y);
             double x = 0;
+            double n = target_dist / (T * ref_speed);
+            double x_step = target_x / n;
 
             for (int i = 0; i < N_WAYPOINTS - previousPathSize; i++) {
-              double n = target_dist / (T * ref_speed);
-              x += target_x / n;
+              x += x_step;
               additional_x.push_back(x);
               additional_y.push_back(s(x));
             }
