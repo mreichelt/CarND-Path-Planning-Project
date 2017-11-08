@@ -32,6 +32,4 @@ public:
 
 };
 
-vector<Vehicle> getValidVehicles(vector<vector<double>> &sensorFusionList);
-
 #endif //PATH_PLANNING_VEHICLE_H

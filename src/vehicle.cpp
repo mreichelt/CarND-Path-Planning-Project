@@ -1,4 +1,4 @@
-#include "Vehicle.h"
+#include "vehicle.h"
 #include "const.h"
 #include <cmath>
 
@@ -30,15 +30,4 @@ bool Vehicle::isInLane(int lane) {
 
 double Vehicle::getPredictedS(double delta_t) {
   return s + getSpeed() * delta_t;
-}
-
-vector<Vehicle> getValidVehicles(vector<vector<double>> &sensorFusionList) {
-  vector<Vehicle> vehicles;
-  for (const vector<double> &sensorFusion : sensorFusionList) {
-    Vehicle vehicle(sensorFusion);
-    if (vehicle.isValid()) {
-      vehicles.push_back(vehicle);
-    }
-  }
-  return vehicles;
 }

@@ -1,7 +1,8 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "../src/Vehicle.h"
+#include "../src/vehicle.h"
+#include "../src/sensorfusion.h"
 #include "../src/tools.h"
 
 using namespace std;
@@ -55,7 +56,8 @@ TEST_CASE("parse all vehicles from sensor fusion data") {
     }
   };
 
-  vector<Vehicle> vehicles = getValidVehicles(sensorFusionList);
+  const SensorFusion &sensorFusion = SensorFusion(sensorFusionList);
+  vector<Vehicle> vehicles = sensorFusion.vehicles;
   REQUIRE(vehicles.size() == 2);
   REQUIRE(vehicles[0].id == 0);
   REQUIRE(vehicles[1].id == 1);
@@ -80,7 +82,8 @@ TEST_CASE("filter only valid vehicles") {
     }
   };
 
-  vector<Vehicle> vehicles = getValidVehicles(sensorFusionList);
+  const SensorFusion &sensorFusion = SensorFusion(sensorFusionList);
+  vector<Vehicle> vehicles = sensorFusion.vehicles;
   REQUIRE(vehicles.size() == 1);
   REQUIRE(vehicles[0].id == 0);
 }

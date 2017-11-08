@@ -11,7 +11,8 @@
 #include "spline.h"
 #include "tools.h"
 #include "const.h"
-#include "Vehicle.h"
+#include "vehicle.h"
+#include "sensorfusion.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -101,7 +102,7 @@ int main() {
             vector<vector<double>> raw_sensor_fusion = j[1]["sensor_fusion"];
 
             // convert raw sensor fusion data to something a little bit improved
-            vector<Vehicle> vehicles = getValidVehicles(raw_sensor_fusion);
+            const SensorFusion sensorFusion(raw_sensor_fusion);
 
 
             vector<double> ptsx, ptsy;
@@ -115,7 +116,7 @@ int main() {
               car_s = end_path_s;
             }
 
-            for (Vehicle vehicle : vehicles) {
+            for (Vehicle vehicle : sensorFusion.vehicles) {
               if (vehicle.isInLane(lane)) {
                 double predicted_s = vehicle.getPredictedS(previousPathSize * T);
                 if (predicted_s > car_s && (predicted_s - car_s) < 30.0) {
