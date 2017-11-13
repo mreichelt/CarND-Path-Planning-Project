@@ -12,6 +12,7 @@ const double MIN_SPEED = mph2mps(0.001);
 const double MAX_SPEED = mph2mps(49.5);
 const double T = 0.02;
 const int N_WAYPOINTS = 50;
-const auto PLANNING_INTERVAL = chrono::seconds(2);
+const auto PLANNING_INTERVAL = chrono::seconds(3);
+const double COLLISION_AVOIDANCE_RANGE = 40.0;
 
 #endif //PATH_PLANNING_CONST_H
