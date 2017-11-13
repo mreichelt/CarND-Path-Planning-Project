@@ -74,7 +74,8 @@ int main() {
   int target_lane = 1;
   auto next_planning = system_clock::now() + 2 * PLANNING_INTERVAL;
 
-  h.onMessage([&target_lane, &next_planning, &map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy](
+  h.onMessage([&target_lane, &next_planning,
+                &map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy](
     uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
     uWS::OpCode opCode) {
       // "42" at the start of the message means there's a websocket message event.
@@ -181,7 +182,8 @@ int main() {
             int steps = 2;
             double d_delta = (target_d - car_d) / steps;
             for (int i = 1; i <= steps; i++) {
-              vector<double> xy = getXY(car_s + meters * i, current_d + (i * d_delta), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+              vector<double> xy = getXY(car_s + meters * i, current_d + (i * d_delta),
+                                        map_waypoints_s, map_waypoints_x, map_waypoints_y);
               ptsx.push_back(xy[0]);
               ptsy.push_back(xy[1]);
             }
