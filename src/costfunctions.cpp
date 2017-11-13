@@ -1,5 +1,6 @@
 #include "costfunctions.h"
 #include <map>
+#include <iostream>
 
 double cost_change_lane(const CostFunctionArgs &args) {
   // TODO
@@ -31,3 +32,23 @@ double cost(const CostFunctionArgs &args) {
   }
   return cost;
 }
+
+int next_state(SensorFusion sensorFusion, int targetLane, double s, double d) {
+  int state = STATE_KEEP_LANE;
+  if (targetLane == 1 && s > 200) {
+    state = STATE_CHANGE_LEFT;
+  }
+  cout << "Next state is " << state << endl;
+  return state;
+}
+
+CostFunctionArgs::CostFunctionArgs(int state,
+                                   SensorFusion sensorFusion,
+                                   int target_lane,
+                                   double s,
+                                   double d)
+  : state(state),
+    sensorFusion(sensorFusion),
+    target_lane(target_lane),
+    s(s),
+    d(d) {}

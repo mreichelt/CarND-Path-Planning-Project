@@ -56,7 +56,7 @@ TEST_CASE("parse all vehicles from sensor fusion data") {
     }
   };
 
-  const SensorFusion &sensorFusion = SensorFusion(sensorFusionList);
+  SensorFusion sensorFusion(sensorFusionList);
   vector<Vehicle> vehicles = sensorFusion.vehicles;
   REQUIRE(vehicles.size() == 2);
   REQUIRE(vehicles[0].id == 0);
@@ -82,7 +82,7 @@ TEST_CASE("filter only valid vehicles") {
     }
   };
 
-  const SensorFusion &sensorFusion = SensorFusion(sensorFusionList);
+  SensorFusion sensorFusion(sensorFusionList);
   vector<Vehicle> vehicles = sensorFusion.vehicles;
   REQUIRE(vehicles.size() == 1);
   REQUIRE(vehicles[0].id == 0);
@@ -164,4 +164,29 @@ TEST_CASE("forward and reverse transform multiple coordinates") {
   reverse_transform_coordinates(x, y, {1.0, 1.0}, M_PI_2);
   require_approx_same(x, {1.0, 1.0, 1.0});
   require_approx_same(y, {1.0, 2.0, 3.0});
+}
+
+TEST_CASE("find vehicles in lane") {
+  vector<vector<double>> sensorFusionList = {
+    {0,
+      894.6071,
+      1128.782,
+      20.90929,
+      -0.01702391,
+      110.0156,
+      6.019912},
+    {1,
+      910.4965,
+      1124.818,
+      22.2936,
+      0.121575,
+      125.8168,
+      10.02528
+    }
+  };
+
+  SensorFusion sensorFusion(sensorFusionList);
+  REQUIRE(sensorFusion.getVehicles(0).size() == 0);
+  REQUIRE(sensorFusion.getVehicles(1).size() == 1);
+  REQUIRE(sensorFusion.getVehicles(2).size() == 1);
 }

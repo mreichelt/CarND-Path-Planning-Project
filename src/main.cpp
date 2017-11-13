@@ -13,9 +13,11 @@
 #include "const.h"
 #include "vehicle.h"
 #include "sensorfusion.h"
+#include "costfunctions.h"
 
 using namespace std;
 using json = nlohmann::json;
+using system_clock = chrono::system_clock;
 
 // Checks if the SocketIO event has JSON data.
 // If there is data the JSON object in string format will be returned,
@@ -69,9 +71,10 @@ int main() {
     map_waypoints_dy.push_back(d_y);
   }
 
-  int lane = 1;
+  int target_lane = 1;
+  auto next_planning = system_clock::now() + 2 * PLANNING_INTERVAL;
 
-  h.onMessage([&lane, &map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy](
+  h.onMessage([&target_lane, &next_planning, &map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy](
     uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
     uWS::OpCode opCode) {
       // "42" at the start of the message means there's a websocket message event.
@@ -102,26 +105,40 @@ int main() {
             vector<vector<double>> raw_sensor_fusion = j[1]["sensor_fusion"];
 
             // convert raw sensor fusion data to something a little bit improved
-            const SensorFusion sensorFusion(raw_sensor_fusion);
+            SensorFusion sensorFusion(raw_sensor_fusion);
 
+            // check if we need to plan again
+            int state = STATE_KEEP_LANE;
+            if (system_clock::now() > next_planning) {
+              next_planning = system_clock::now() + PLANNING_INTERVAL;
+              cout << "Planning" << endl;
+              state = next_state(sensorFusion, target_lane, end_path_s, end_path_d);
+            }
+
+            // apply new state
+            if (state == STATE_CHANGE_LEFT && target_lane > 0) {
+              target_lane--;
+            }
+            if (state == STATE_CHANGE_RIGHT && target_lane < LANES) {
+              target_lane++;
+            }
 
             vector<double> ptsx, ptsy;
 
             size_t previousPathSize = previous_path_x.size();
 
             bool too_close = false;
-            double d = 2 + lane * 4;
+            double target_d = 2 + target_lane * 4;
 
             if (previousPathSize > 0) {
               car_s = end_path_s;
+              car_d = end_path_d;
             }
 
-            for (Vehicle vehicle : sensorFusion.vehicles) {
-              if (vehicle.isInLane(lane)) {
-                double predicted_s = vehicle.getPredictedS(previousPathSize * T);
-                if (predicted_s > car_s && (predicted_s - car_s) < 30.0) {
-                  too_close = true;
-                }
+            for (Vehicle vehicle : sensorFusion.getVehicles(target_lane)) {
+              double predicted_s = vehicle.getPredictedS(previousPathSize * T);
+              if (predicted_s > car_s && (predicted_s - car_s) < 30.0) {
+                too_close = true;
               }
             }
 
@@ -149,14 +166,9 @@ int main() {
             ptsy.push_back(y1);
             ptsy.push_back(ref_y);
 
-            cout << "end_path_d: " << end_path_d << endl;
-
             double ref_speed = end_car_speed;
             double velocity_change = mph2mps(0.3);
             if (too_close) {
-              if (lane > 0) {
-                lane = 0;
-              }
               ref_speed -= velocity_change;
             } else {
               ref_speed += velocity_change;
@@ -165,8 +177,11 @@ int main() {
 
             // generate sparse target waypoints
             double meters = 15.0;
-            for (int i = 1; i <= 3; i++) {
-              vector<double> xy = getXY(car_s + meters * i, d, map_waypoints_s, map_waypoints_x, map_waypoints_y);
+            double current_d = car_d;
+            int steps = 2;
+            double d_delta = (target_d - car_d) / steps;
+            for (int i = 1; i <= steps; i++) {
+              vector<double> xy = getXY(car_s + meters * i, current_d + (i * d_delta), map_waypoints_s, map_waypoints_x, map_waypoints_y);
               ptsx.push_back(xy[0]);
               ptsy.push_back(xy[1]);
             }

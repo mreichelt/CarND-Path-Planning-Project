@@ -5,9 +5,13 @@
 
 class SensorFusion {
 public:
-    const vector<Vehicle> vehicles;
+    vector<Vehicle> vehicles;
 
     explicit SensorFusion(const vector<vector<double>> &sensorFusionList);
+
+    vector<Vehicle> getVehicles(int lane);
+
+    double getMinimalSpeed(int lane);
 };
 
 #endif //PATH_PLANNING_SENSORFUSION_H
