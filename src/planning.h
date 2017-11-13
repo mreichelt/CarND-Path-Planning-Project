@@ -1,5 +1,5 @@
-#ifndef PATH_PLANNING_COSTFUNCTIONS_H
-#define PATH_PLANNING_COSTFUNCTIONS_H
+#ifndef PATH_PLANNING_PLANNING_H
+#define PATH_PLANNING_PLANNING_H
 
 #include "vehicle.h"
 #include "sensorfusion.h"
@@ -32,4 +32,4 @@ double cost(const CostFunctionArgs &args);
 
 int next_state(SensorFusion sensorFusion, int targetLane, double s, double d);
 
-#endif //PATH_PLANNING_COSTFUNCTIONS_H
+#endif //PATH_PLANNING_PLANNING_H

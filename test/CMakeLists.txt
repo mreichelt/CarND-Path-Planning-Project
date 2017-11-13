@@ -5,7 +5,7 @@ add_executable(Test tests.cpp
   ../src/vehicle.cpp
   ../src/spline.h
   ../src/const.h
-  ../src/costfunctions.cpp
+  ../src/planning.cpp
   ../src/sensorfusion.cpp)
 
 target_link_libraries(Test z ssl uv uWS)
