@@ -28,10 +28,10 @@ vector<Vehicle> SensorFusion::getVehicles(int lane) {
   return vehiclesInLane;
 }
 
-double SensorFusion::getMinimalSpeed(int lane) {
+double SensorFusion::getMinimalSpeedInFrontOf(int lane, double s, double delta_t) {
   double minimalSpeed = MAX_SPEED;
   for (Vehicle vehicle : getVehicles(lane)) {
-    if (vehicle.getSpeed() < minimalSpeed) {
+    if (vehicle.getPredictedS(delta_t) > s && vehicle.getSpeed() < minimalSpeed) {
       minimalSpeed = vehicle.getSpeed();
     }
   }

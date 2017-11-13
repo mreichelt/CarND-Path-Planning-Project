@@ -13,7 +13,7 @@ double cost_change_lane(CostFunctionArgs &args) {
  * A lane with higher possible speed should be preferred to a lane with lower speed.
  */
 double cost_inefficiency(CostFunctionArgs &args) {
-  double min_lane_speed = args.sensorFusion.getMinimalSpeed(args.proposed_lane);
+  double min_lane_speed = args.sensorFusion.getMinimalSpeedInFrontOf(args.proposed_lane, args.s, args.delta_t);
   double cost = (MAX_SPEED - min_lane_speed) / MAX_SPEED;
   return max(0.0, cost);
 }
@@ -63,11 +63,11 @@ double cost(CostFunctionArgs &args) {
  */
 vector<int> getPossibleStates(int targetLane) {
   vector<int> possibleStates;
-  if (targetLane > 0) {
+  if (targetLane > MIN_LANE) {
     possibleStates.push_back(STATE_CHANGE_LEFT);
   }
   possibleStates.push_back(STATE_KEEP_LANE);
-  if (targetLane < LANES) {
+  if (targetLane < MAX_LANE) {
     possibleStates.push_back(STATE_CHANGE_RIGHT);
   }
   return possibleStates;
@@ -81,6 +81,7 @@ long getMinIndex(vector<double> values) {
  * Determines the next state to choose based on the current situation of the vehicle and its surroundings.
  */
 int next_state(SensorFusion sensorFusion, int targetLane, double s, double d, double delta_t) {
+  cout << "next_state for lane = " << targetLane << endl;
   vector<int> possibleStates = getPossibleStates(targetLane);
   vector<double> costs;
   for (int possibleState : possibleStates) {
@@ -111,10 +112,10 @@ CostFunctionArgs::CostFunctionArgs(int state,
 int getNewLane(int state, int current_lane) {
   switch (state) {
     case STATE_CHANGE_LEFT:
-      return max(0, current_lane - 1);
+      return current_lane - 1;
 
     case STATE_CHANGE_RIGHT:
-      return min(LANES, current_lane + 1);
+      return current_lane + 1;
 
     default:
       return current_lane;

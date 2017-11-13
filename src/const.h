@@ -5,6 +5,8 @@
 #include <chrono>
 
 const int LANES = 3;
+const int MIN_LANE = 0;
+const int MAX_LANE = LANES - 1;
 const double LANE_WIDTH = 4.0;
 const double MIN_D = 0.0;
 const double MAX_D = LANES * LANE_WIDTH;

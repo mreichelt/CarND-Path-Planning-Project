@@ -11,7 +11,7 @@ public:
 
     vector<Vehicle> getVehicles(int lane);
 
-    double getMinimalSpeed(int lane);
+    double getMinimalSpeedInFrontOf(int lane, double s, double delta_t);
 };
 
 #endif //PATH_PLANNING_SENSORFUSION_H

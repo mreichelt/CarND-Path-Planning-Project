@@ -174,11 +174,10 @@ int main() {
 
             // generate sparse target waypoints
             double meters = 15.0;
-            double current_d = car_d;
             int steps = 2;
             double d_delta = (target_d - car_d) / steps;
             for (int i = 1; i <= steps; i++) {
-              vector<double> xy = getXY(car_s + meters * i, current_d + (i * d_delta),
+              vector<double> xy = getXY(car_s + meters * i, car_d + (i * d_delta),
                                         map_waypoints_s, map_waypoints_x, map_waypoints_y);
               ptsx.push_back(xy[0]);
               ptsy.push_back(xy[1]);
