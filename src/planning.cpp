@@ -60,10 +60,10 @@ double cost_collision(CostFunctionArgs &args) {
 
 double cost(CostFunctionArgs &args) {
   map<CostFunction, double> costFunctions = {
-    {cost_change_lane,      WEIGHT_COMFORT},
-    {cost_inefficiency,     WEIGHT_EFFICIENCY},
-    {cost_room_for_driving, WEIGHT_EFFICIENCY},
-    {cost_collision,        WEIGHT_COLLISION}
+    {cost_change_lane,  WEIGHT_COMFORT},
+    {cost_inefficiency, WEIGHT_EFFICIENCY},
+//    {cost_room_for_driving, WEIGHT_EFFICIENCY},
+    {cost_collision,    WEIGHT_COLLISION}
   };
 
   double cost = 0.0;
