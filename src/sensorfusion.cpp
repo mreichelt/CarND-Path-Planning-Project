@@ -1,5 +1,6 @@
 #include "sensorfusion.h"
 #include "const.h"
+#include <algorithm>
 
 
 vector<Vehicle> getValidVehicles(const vector<vector<double>> &sensorFusionList) {
@@ -42,9 +43,10 @@ NextVehicleInfo SensorFusion::getNextVehicleInfo(int lane, double s, double delt
   NextVehicleInfo info{false, MAX_ROOM, MAX_SPEED};
 
   vector<Vehicle> vehiclesInFront;
-  copy_if(begin(vehicles), end(vehicles), back_inserter(vehiclesInFront), [&lane, &s, &delta_t](Vehicle &vehicle) {
-      return vehicle.isInLane(lane) && vehicle.getPredictedS(delta_t) > s;
-  });
+  std::copy_if(begin(vehicles), end(vehicles), std::back_inserter(vehiclesInFront),
+               [&lane, &s, &delta_t](Vehicle &vehicle) {
+                   return vehicle.isInLane(lane) && vehicle.getPredictedS(delta_t) > s;
+               });
 
   double nearestS = numeric_limits<double>::max();
   for (Vehicle vehicleInFront : vehiclesInFront) {

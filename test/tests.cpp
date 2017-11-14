@@ -191,16 +191,22 @@ TEST_CASE("find vehicles in lane") {
   REQUIRE(sensorFusion.getVehicles(2).size() == 1);
 }
 
-TEST_CASE("follower speed should be max speed for more than 100m distance") {
-  REQUIRE(getFollowerSpeed(mph2mps(40.0), 105.0) == Approx(MAX_SPEED));
+TEST_CASE("follower speed should be max speed for more than 50m distance") {
+  REQUIRE(getFollowerSpeed(mph2mps(40.0), 55.0) == Approx(MAX_SPEED));
 }
 
-TEST_CASE("follower speed should be at exactly speed when distance is 40m") {
-  REQUIRE(getFollowerSpeed(mph2mps(30.0), 40.0) == Approx(mph2mps(30.0)));
+TEST_CASE("follower speed should be near max speed when just reaching corridor") {
+  double followerSpeed = getFollowerSpeed(mph2mps(40.0), 49.9);
+  REQUIRE(followerSpeed < MAX_SPEED);
+  REQUIRE(followerSpeed > mph2mps(49.0));
+}
+
+TEST_CASE("follower speed should be at exactly speed when distance is at optimum") {
+  REQUIRE(getFollowerSpeed(mph2mps(30.0), 30.0) == Approx(mph2mps(30.0)));
 }
 
 TEST_CASE("follower speed should be smaller then speed of other vehicle when too close") {
-  REQUIRE(getFollowerSpeed(mph2mps(30.0), 20.0) < mph2mps(25.0));
+  REQUIRE(getFollowerSpeed(mph2mps(30.0), 10.0) < mph2mps(25.0));
 }
 
 TEST_CASE("follower speed should not be negative") {

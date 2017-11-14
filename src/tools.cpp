@@ -158,8 +158,8 @@ double clip(double d, double lower, double upper) {
 }
 
 double getFollowerSpeed(double speed, double distance) {
-  double max_distance = 100.0;
-  double distance_desired = 40.0;
+  double max_distance = CORRIDOR_DISTANCE;
+  double distance_desired = OPTIMUM_DISTANCE;
   if (distance >= max_distance) {
     return MAX_SPEED;
   }
@@ -169,12 +169,11 @@ double getFollowerSpeed(double speed, double distance) {
   double n = MAX_SPEED - m * max_distance;
   double follower_speed = m * distance + n;
 
-  // cap by MIN_SPEED and MAX_SPEED and can't be larger than speed
-  follower_speed = min(follower_speed, speed);
   return clip(follower_speed, MIN_SPEED, MAX_SPEED);
 }
 
-template <typename T> int sgn(T val) {
+template<typename T>
+int sgn(T val) {
   return (T(0) < val) - (val < T(0));
 }
 

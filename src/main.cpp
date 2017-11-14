@@ -132,6 +132,13 @@ int main() {
 
             NextVehicleInfo info = sensorFusion.getNextVehicleInfo(target_lane, car_s, delta_t);
 
+            if (info.hasNextVehicle) {
+              cout << "Next vehicle distance=" << info.distance << "m, speed=" << info.speed << "m/s" << endl;
+            } else {
+              cout << "No next vehicle detected" << endl;
+            }
+
+
             // generate initial 2 waypoints
             double x1, y1, ref_x, ref_y;
             double ref_yaw = car_yaw;
@@ -156,7 +163,6 @@ int main() {
             ptsy.push_back(ref_y);
 
             double desiredSpeed = getFollowerSpeed(info.speed, info.distance);
-            cout << "Desired speed: " << desiredSpeed << endl;
             double velocityChange = getVelocityChange(car_speed, desiredSpeed);
             double target_speed = car_speed + velocityChange;
             target_speed = clip(target_speed, MIN_SPEED, MAX_SPEED);
