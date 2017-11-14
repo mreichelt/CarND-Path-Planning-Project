@@ -98,13 +98,13 @@ int main() {
             double car_s = j[1]["s"];
             double car_d = j[1]["d"];
             double car_yaw = deg2rad(j[1]["yaw"]);
-            double car_speed = mph2mps(j[1]["speed"]);
             vector<double> previous_path_x = j[1]["previous_path_x"];
             vector<double> previous_path_y = j[1]["previous_path_y"];
             double end_path_s = j[1]["end_path_s"];
             double end_path_d = j[1]["end_path_d"];
             vector<vector<double>> raw_sensor_fusion = j[1]["sensor_fusion"];
             size_t previousPathSize = previous_path_x.size();
+            double delta_t = previousPathSize * T;
 
             // convert raw sensor fusion data to something a little bit improved
             SensorFusion sensorFusion(raw_sensor_fusion);
@@ -114,7 +114,6 @@ int main() {
             if (system_clock::now() > next_planning) {
               next_planning = system_clock::now() + PLANNING_INTERVAL;
               cout << "Planning" << endl;
-              double delta_t = previousPathSize * T;
               state = next_state(sensorFusion, target_lane, end_path_s, end_path_d, delta_t);
             }
 
@@ -124,7 +123,6 @@ int main() {
             vector<double> ptsx, ptsy;
 
 
-            bool too_close = false;
             double target_d = 2 + target_lane * 4;
 
             if (previousPathSize > 0) {
@@ -132,18 +130,12 @@ int main() {
               car_d = end_path_d;
             }
 
-            for (Vehicle vehicle : sensorFusion.getVehicles(target_lane)) {
-              double predicted_s = vehicle.getPredictedS(previousPathSize * T);
-              if (predicted_s > car_s && (predicted_s - car_s) < 30.0) {
-                too_close = true;
-              }
-            }
-
+            NextVehicleInfo info = sensorFusion.getNextVehicleInfo(target_lane, car_s, delta_t);
 
             // generate initial 2 waypoints
             double x1, y1, ref_x, ref_y;
             double ref_yaw = car_yaw;
-            double end_car_speed = car_speed;
+            double car_speed = 0.0;
             if (previousPathSize < 2) {
               x1 = car_x - cos(car_yaw);
               y1 = car_y - sin(car_yaw);
@@ -156,21 +148,18 @@ int main() {
               ref_y = previous_path_y[previousPathSize - 1];
               ref_yaw = atan2(ref_y - y1, ref_x - x1);
               double dist = distance(x1, y1, ref_x, ref_y);
-              end_car_speed = dist / T;
+              car_speed = dist / T;
             }
             ptsx.push_back(x1);
             ptsx.push_back(ref_x);
             ptsy.push_back(y1);
             ptsy.push_back(ref_y);
 
-            double ref_speed = end_car_speed;
-            double velocity_change = mph2mps(0.3);
-            if (too_close) {
-              ref_speed -= velocity_change;
-            } else {
-              ref_speed += velocity_change;
-            }
-            ref_speed = clip(ref_speed, MIN_SPEED, MAX_SPEED);
+            double desiredSpeed = getFollowerSpeed(info.speed, info.distance);
+            cout << "Desired speed: " << desiredSpeed << endl;
+            double velocityChange = getVelocityChange(car_speed, desiredSpeed);
+            double target_speed = car_speed + velocityChange;
+            target_speed = clip(target_speed, MIN_SPEED, MAX_SPEED);
 
             // generate sparse target waypoints
             double meters = 15.0;
@@ -199,7 +188,7 @@ int main() {
             double target_y = s(target_x);
             double target_dist = sqrt(target_x * target_x + target_y * target_y);
             double x = 0;
-            double n = target_dist / (T * ref_speed);
+            double n = target_dist / (T * target_speed);
             double x_step = target_x / n;
 
             for (int i = 0; i < N_WAYPOINTS - previousPathSize; i++) {

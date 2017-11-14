@@ -1,6 +1,9 @@
 #include "planning.h"
 #include <map>
 #include <iostream>
+#include <algorithm>
+
+using namespace std;
 
 /**
  * Keeping the current lane in general is more comfortable than changing lanes.
@@ -19,6 +22,20 @@ double cost_inefficiency(CostFunctionArgs &args) {
 }
 
 /**
+ * A lane where the next vehicle is further away should be preferred.
+ */
+double cost_room_for_driving(CostFunctionArgs &args) {
+  NextVehicleInfo info = args.sensorFusion.getNextVehicleInfo(args.proposed_lane, args.s, args.delta_t);
+  if (!info.hasNextVehicle) {
+    // no vehicle here - yeah, let's take it!
+    return 0.0;
+  }
+
+  double cost = (MAX_ROOM - info.distance) / MAX_ROOM;
+  return clip(cost, 0.0, 1.0);
+}
+
+/**
  * State changes that lead to collisions should be avoided.
  */
 double cost_collision(CostFunctionArgs &args) {
@@ -29,8 +46,8 @@ double cost_collision(CostFunctionArgs &args) {
 
   // otherwise, check if there would be a collision
   vector<Vehicle> vehiclesInProposedLane = args.sensorFusion.getVehicles(args.proposed_lane);
-  double s_corridor_start = args.s - COLLISION_AVOIDANCE_RANGE;
-  double s_corridor_end = args.s + COLLISION_AVOIDANCE_RANGE;
+  double s_corridor_start = args.s - COLLISION_AVOIDANCE_BACK;
+  double s_corridor_end = args.s + COLLISION_AVOIDANCE_FRONT;
   for (Vehicle vehicleInProposedLane : vehiclesInProposedLane) {
     double predictedS = vehicleInProposedLane.getPredictedS(args.delta_t);
     if (predictedS >= s_corridor_start && predictedS <= s_corridor_end) {
@@ -43,9 +60,10 @@ double cost_collision(CostFunctionArgs &args) {
 
 double cost(CostFunctionArgs &args) {
   map<CostFunction, double> costFunctions = {
-    {cost_change_lane,  WEIGHT_COMFORT},
-    {cost_inefficiency, WEIGHT_EFFICIENCY},
-    {cost_collision,    WEIGHT_COLLISION}
+    {cost_change_lane,      WEIGHT_COMFORT},
+    {cost_inefficiency,     WEIGHT_EFFICIENCY},
+    {cost_room_for_driving, WEIGHT_EFFICIENCY},
+    {cost_collision,        WEIGHT_COLLISION}
   };
 
   double cost = 0.0;

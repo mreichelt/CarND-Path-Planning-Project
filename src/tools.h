@@ -41,4 +41,8 @@ void reverse_transform_coordinates(vector<double> &x_list, vector<double> &y_lis
 
 double clip(double d, double lower, double upper);
 
+double getFollowerSpeed(double speed, double distance);
+
+double getVelocityChange(double current_speed, double desired_speed);
+
 #endif //PATH_PLANNING_TOOLS_H

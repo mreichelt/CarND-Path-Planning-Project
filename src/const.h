@@ -12,9 +12,12 @@ const double MIN_D = 0.0;
 const double MAX_D = LANES * LANE_WIDTH;
 const double MIN_SPEED = mph2mps(0.001);
 const double MAX_SPEED = mph2mps(49.5);
+const double MAX_SPEED_CHANGE = mph2mps(0.3);
+const double MAX_ROOM = 3000.0;
 const double T = 0.02;
 const int N_WAYPOINTS = 50;
 const auto PLANNING_INTERVAL = chrono::seconds(3);
-const double COLLISION_AVOIDANCE_RANGE = 40.0;
+const double COLLISION_AVOIDANCE_FRONT = 40.0;
+const double COLLISION_AVOIDANCE_BACK = 30.0;
 
 #endif //PATH_PLANNING_CONST_H

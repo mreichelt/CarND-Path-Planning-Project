@@ -1,4 +1,5 @@
 #include "tools.h"
+#include "const.h"
 
 #include <cmath>
 
@@ -154,4 +155,33 @@ void reverse_transform_coordinates(vector<double> &x_list, vector<double> &y_lis
 
 double clip(double d, double lower, double upper) {
   return max(lower, min(d, upper));
+}
+
+double getFollowerSpeed(double speed, double distance) {
+  double max_distance = 100.0;
+  double distance_desired = 40.0;
+  if (distance >= max_distance) {
+    return MAX_SPEED;
+  }
+
+  // generate a line f(x) = m*x + n
+  double m = (MAX_SPEED - speed) / (max_distance - distance_desired);
+  double n = MAX_SPEED - m * max_distance;
+  double follower_speed = m * distance + n;
+
+  // cap by MIN_SPEED and MAX_SPEED and can't be larger than speed
+  follower_speed = min(follower_speed, speed);
+  return clip(follower_speed, MIN_SPEED, MAX_SPEED);
+}
+
+template <typename T> int sgn(T val) {
+  return (T(0) < val) - (val < T(0));
+}
+
+double getVelocityChange(double current_speed, double desired_speed) {
+  double diff = desired_speed - current_speed;
+  if (fabs(diff) > 1.0) {
+    return sgn(diff) * MAX_SPEED_CHANGE;
+  }
+  return diff * MAX_SPEED_CHANGE;
 }

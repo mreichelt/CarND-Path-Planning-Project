@@ -37,3 +37,24 @@ double SensorFusion::getMinimalSpeedInFrontOf(int lane, double s, double delta_t
   }
   return minimalSpeed;
 }
+
+NextVehicleInfo SensorFusion::getNextVehicleInfo(int lane, double s, double delta_t) {
+  NextVehicleInfo info{false, MAX_ROOM, MAX_SPEED};
+
+  vector<Vehicle> vehiclesInFront;
+  copy_if(begin(vehicles), end(vehicles), back_inserter(vehiclesInFront), [&lane, &s, &delta_t](Vehicle &vehicle) {
+      return vehicle.isInLane(lane) && vehicle.getPredictedS(delta_t) > s;
+  });
+
+  double nearestS = numeric_limits<double>::max();
+  for (Vehicle vehicleInFront : vehiclesInFront) {
+    double predictedS = vehicleInFront.getPredictedS(delta_t);
+    if (predictedS < nearestS) {
+      info.hasNextVehicle = true;
+      info.distance = predictedS - s;
+      info.speed = vehicleInFront.getSpeed();
+    }
+  }
+
+  return info;
+}
