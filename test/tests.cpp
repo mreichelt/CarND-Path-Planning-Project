@@ -226,3 +226,11 @@ TEST_CASE("desired speed change is max") {
 TEST_CASE("desired speed change is 0") {
   REQUIRE(getVelocityChange(mph2mps(25.0), mph2mps(25.0)) == Approx(0.0));
 }
+
+TEST_CASE("normalized s is the same value when no wraparound is needed") {
+  REQUIRE(normalizeS(6000.0) == Approx(6000.0));
+}
+
+TEST_CASE("normalize s that is larger than max") {
+  REQUIRE(normalizeS(6946.554) == Approx(1.0));
+}

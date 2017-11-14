@@ -46,8 +46,6 @@ int main() {
 
   // Waypoint map to read from
   string map_file_ = "../data/highway_map.csv";
-  // The max s value before wrapping around the track back to 0
-  double max_s = 6945.554;
 
   ifstream in_map_(map_file_.c_str(), ifstream::in);
 
@@ -96,11 +94,13 @@ int main() {
             double car_x = j[1]["x"];
             double car_y = j[1]["y"];
             double car_s = j[1]["s"];
+            car_s = normalizeS(car_s);
             double car_d = j[1]["d"];
             double car_yaw = deg2rad(j[1]["yaw"]);
             vector<double> previous_path_x = j[1]["previous_path_x"];
             vector<double> previous_path_y = j[1]["previous_path_y"];
             double end_path_s = j[1]["end_path_s"];
+            end_path_s = normalizeS(end_path_s);
             double end_path_d = j[1]["end_path_d"];
             vector<vector<double>> raw_sensor_fusion = j[1]["sensor_fusion"];
             size_t previousPathSize = previous_path_x.size();

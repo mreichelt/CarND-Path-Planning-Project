@@ -184,3 +184,7 @@ double getVelocityChange(double current_speed, double desired_speed) {
   }
   return diff * MAX_SPEED_CHANGE;
 }
+
+double normalizeS(double s) {
+  return s >= MAX_S ? s - MAX_S : s;
+}
