@@ -22,10 +22,10 @@ public:
     int proposed_lane;
 
     double s;
-    double d;
+    double speed;
     double delta_t;
 
-    CostFunctionArgs(int state, SensorFusion sensorFusion, int current_lane, double s, double d, double delta_t);
+    CostFunctionArgs(int state, SensorFusion sensorFusion, int current_lane, double s, double speed, double delta_t);
 };
 
 typedef double (*CostFunction)(CostFunctionArgs &args);

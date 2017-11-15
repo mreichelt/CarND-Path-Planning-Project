@@ -112,31 +112,6 @@ int main() {
             // convert raw sensor fusion data to something a little bit improved
             SensorFusion sensorFusion(raw_sensor_fusion, car_s, delta_t);
 
-            // check if we need to plan again
-            int state = STATE_KEEP_LANE;
-            if (system_clock::now() > next_planning) {
-              next_planning = system_clock::now() + PLANNING_INTERVAL;
-              cout << "Planning" << endl;
-              state = next_state(sensorFusion, target_lane, car_s, car_d, delta_t);
-            }
-
-            // apply new state
-            target_lane = getNewLane(state, target_lane);
-
-            vector<double> ptsx, ptsy;
-
-
-            double target_d = 2 + target_lane * 4;
-
-            NextVehicleInfo info = sensorFusion.getNextVehicleInfo(target_lane);
-
-            if (info.hasNextVehicle) {
-              cout << "Next vehicle distance=" << info.distance << "m, speed=" << info.speed << "m/s" << endl;
-            } else {
-              cout << "No next vehicle detected" << endl;
-            }
-
-
             // generate initial 2 waypoints
             double x1, y1, ref_x, ref_y;
             double ref_yaw = car_yaw;
@@ -155,10 +130,31 @@ int main() {
               double dist = distance(x1, y1, ref_x, ref_y);
               car_speed = dist / T;
             }
-            ptsx.push_back(x1);
-            ptsx.push_back(ref_x);
-            ptsy.push_back(y1);
-            ptsy.push_back(ref_y);
+            vector<double>
+              ptsx = {x1, ref_x},
+              ptsy = {y1, ref_y};
+
+            // check if we need to plan again
+            int state = STATE_KEEP_LANE;
+            if (system_clock::now() > next_planning) {
+              next_planning = system_clock::now() + PLANNING_INTERVAL;
+              cout << "Planning" << endl;
+              state = next_state(sensorFusion, target_lane, car_s, car_speed, delta_t);
+            }
+
+            // apply new state
+            target_lane = getNewLane(state, target_lane);
+
+
+            double target_d = 2 + target_lane * 4;
+
+            NextVehicleInfo info = sensorFusion.getNextVehicleInfo(target_lane);
+
+            if (info.hasNextVehicle) {
+              cout << "Next vehicle distance=" << info.distance << "m, speed=" << info.speed << "m/s" << endl;
+            } else {
+              cout << "No next vehicle detected" << endl;
+            }
 
             double desiredSpeed = getFollowerSpeed(info.speed, info.distance);
             double velocityChange = getVelocityChange(car_speed, desiredSpeed);

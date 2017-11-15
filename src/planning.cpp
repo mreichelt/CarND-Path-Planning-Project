@@ -2,6 +2,7 @@
 #include <map>
 #include <iostream>
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
 
@@ -46,16 +47,29 @@ double cost_collision(CostFunctionArgs &args) {
 
   // otherwise, check if there would be a collision
   vector<Vehicle> vehiclesInProposedLane = args.sensorFusion.getVehicles(args.proposed_lane);
-  for (Vehicle vehicleInProposedLane : vehiclesInProposedLane) {
-    double predictedS = vehicleInProposedLane.getPredictedS(args.delta_t);
-    double distance = s_distance(args.s, predictedS);
-    if (distance > 0 && distance < COLLISION_AVOIDANCE_FRONT) {
-      // other vehicle is too close at the front
+
+  // find vehicles that are pretty close to us
+  vector<Vehicle> closeVehicles;
+  std::copy_if(vehiclesInProposedLane.begin(), vehiclesInProposedLane.end(), std::back_inserter(closeVehicles),
+               [&args](Vehicle &vehicle) {
+                   return abs(s_distance(args.s, vehicle.getPredictedS(args.delta_t))) < NO_COLLISION_LIMIT;
+               });
+
+  for (Vehicle &closeVehicle : closeVehicles) {
+    double distance = s_distance(args.s, closeVehicle.getPredictedS(args.delta_t));
+    if (distance > DANGER_ZONE_FRONT || distance < -DANGER_ZONE_BACK) {
       return 1.0;
     }
-    if (distance < 0 && distance > -COLLISION_AVOIDANCE_BACK) {
-      // other vehicle is too close at the rear
-      return 1.0;
+    if (distance > 0) {
+      // car is close to front, check if it is slowing down
+      if (closeVehicle.getSpeed() < args.speed) {
+        return 0.5;
+      }
+    } else {
+      // car is close to rear, check if it is speeding up
+      if (closeVehicle.getSpeed() > args.speed) {
+        return 0.5;
+      }
     }
   }
 
@@ -65,10 +79,10 @@ double cost_collision(CostFunctionArgs &args) {
 
 double cost(CostFunctionArgs &args) {
   map<CostFunction, double> costFunctions = {
-    {cost_change_lane,  WEIGHT_COMFORT},
-    {cost_inefficiency, WEIGHT_EFFICIENCY},
-//    {cost_room_for_driving, WEIGHT_EFFICIENCY},
-    {cost_collision,    WEIGHT_COLLISION}
+    {cost_change_lane,      WEIGHT_COMFORT},
+//    {cost_inefficiency,     WEIGHT_EFFICIENCY},
+    {cost_room_for_driving, WEIGHT_EFFICIENCY},
+    {cost_collision,        WEIGHT_COLLISION}
   };
 
   double cost = 0.0;
@@ -103,12 +117,12 @@ long getMinIndex(vector<double> values) {
 /**
  * Determines the next state to choose based on the current situation of the vehicle and its surroundings.
  */
-int next_state(SensorFusion sensorFusion, int targetLane, double s, double d, double delta_t) {
+int next_state(SensorFusion sensorFusion, int targetLane, double s, double speed, double delta_t) {
   cout << "next_state for lane = " << targetLane << endl;
   vector<int> possibleStates = getPossibleStates(targetLane);
   vector<double> costs;
   for (int possibleState : possibleStates) {
-    CostFunctionArgs args(possibleState, sensorFusion, targetLane, s, d, delta_t);
+    CostFunctionArgs args(possibleState, sensorFusion, targetLane, s, speed, delta_t);
     costs.push_back(cost(args));
   }
   int state = possibleStates[getMinIndex(costs)];
@@ -122,14 +136,14 @@ CostFunctionArgs::CostFunctionArgs(int state,
                                    SensorFusion sensorFusion,
                                    int current_lane,
                                    double s,
-                                   double d,
+                                   double speed,
                                    double delta_t)
   : state(state),
     sensorFusion(sensorFusion),
     current_lane(current_lane),
     proposed_lane(getNewLane(state, current_lane)),
     s(s),
-    d(d),
+    speed(speed),
     delta_t(delta_t) {}
 
 int getNewLane(int state, int current_lane) {

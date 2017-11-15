@@ -55,8 +55,7 @@ NextVehicleInfo SensorFusion::getNextVehicleInfo(int lane) {
 
   double min_distance = numeric_limits<double>::max();
   for (Vehicle vehicleInFront : vehiclesInFront) {
-    double predictedS = vehicleInFront.getPredictedS(delta_t);
-    double distance = s_distance(s, predictedS);
+    double distance = s_distance(s, vehicleInFront.getPredictedS(delta_t));
     if (distance < min_distance) {
       min_distance = distance;
       info.hasNextVehicle = true;
