@@ -16,13 +16,8 @@ vector<Vehicle> getValidVehicles(const vector<vector<double>> &sensorFusionList)
 
 SensorFusion::SensorFusion(const vector<vector<double>> &sensorFusionList, double s, double delta_t)
   : vehicles(getValidVehicles(sensorFusionList)), s(s), delta_t(delta_t) {
-  best_lane = 0;
   for (int lane = 0; lane < LANES; lane++) {
-    NextVehicleInfo info = getNextVehicleInfo(lane);
-    nextVehicleInfos.push_back(info);
-    if (info.speed < nextVehicleInfos[best_lane].speed) {
-      best_lane = lane;
-    }
+    nextVehicleInfos.push_back(getNextVehicleInfo(lane));
   }
 }
 

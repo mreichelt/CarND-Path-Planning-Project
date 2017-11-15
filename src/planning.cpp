@@ -16,9 +16,9 @@ double cost_change_lane(CostFunctionArgs &args) {
  * A lane with higher possible speed should be preferred to a lane with lower speed.
  */
 double cost_inefficiency(CostFunctionArgs &args) {
-  int diff_from_best_lane = abs(args.sensorFusion.best_lane - args.proposed_lane);
-  double max_diff = LANES - 1;
-  return diff_from_best_lane / max_diff;
+  double min_lane_speed = args.sensorFusion.getMinimalSpeedInFrontOf(args.proposed_lane);
+  double cost = (MAX_SPEED - min_lane_speed) / MAX_SPEED;
+  return max(0.0, cost);
 }
 
 /**
