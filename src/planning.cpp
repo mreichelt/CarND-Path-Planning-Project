@@ -16,7 +16,7 @@ double cost_change_lane(CostFunctionArgs &args) {
  * A lane with higher possible speed should be preferred to a lane with lower speed.
  */
 double cost_inefficiency(CostFunctionArgs &args) {
-  double min_lane_speed = args.sensorFusion.getMinimalSpeedInFrontOf(args.proposed_lane, args.s, args.delta_t);
+  double min_lane_speed = args.sensorFusion.getMinimalSpeedInFrontOf(args.proposed_lane);
   double cost = (MAX_SPEED - min_lane_speed) / MAX_SPEED;
   return max(0.0, cost);
 }
@@ -25,7 +25,7 @@ double cost_inefficiency(CostFunctionArgs &args) {
  * A lane where the next vehicle is further away should be preferred.
  */
 double cost_room_for_driving(CostFunctionArgs &args) {
-  NextVehicleInfo info = args.sensorFusion.getNextVehicleInfo(args.proposed_lane, args.s, args.delta_t);
+  NextVehicleInfo info = args.sensorFusion.getNextVehicleInfo(args.proposed_lane);
   if (!info.hasNextVehicle) {
     // no vehicle here - yeah, let's take it!
     return 0.0;

@@ -94,27 +94,30 @@ int main() {
             double car_x = j[1]["x"];
             double car_y = j[1]["y"];
             double car_s = j[1]["s"];
-            car_s = normalizeS(car_s);
             double car_d = j[1]["d"];
             double car_yaw = deg2rad(j[1]["yaw"]);
             vector<double> previous_path_x = j[1]["previous_path_x"];
             vector<double> previous_path_y = j[1]["previous_path_y"];
             double end_path_s = j[1]["end_path_s"];
-            end_path_s = normalizeS(end_path_s);
             double end_path_d = j[1]["end_path_d"];
             vector<vector<double>> raw_sensor_fusion = j[1]["sensor_fusion"];
             size_t previousPathSize = previous_path_x.size();
             double delta_t = previousPathSize * T;
 
+            if (previousPathSize > 0) {
+              car_s = end_path_s;
+              car_d = end_path_d;
+            }
+
             // convert raw sensor fusion data to something a little bit improved
-            SensorFusion sensorFusion(raw_sensor_fusion);
+            SensorFusion sensorFusion(raw_sensor_fusion, car_s, delta_t);
 
             // check if we need to plan again
             int state = STATE_KEEP_LANE;
             if (system_clock::now() > next_planning) {
               next_planning = system_clock::now() + PLANNING_INTERVAL;
               cout << "Planning" << endl;
-              state = next_state(sensorFusion, target_lane, end_path_s, end_path_d, delta_t);
+              state = next_state(sensorFusion, target_lane, car_s, car_d, delta_t);
             }
 
             // apply new state
@@ -125,12 +128,7 @@ int main() {
 
             double target_d = 2 + target_lane * 4;
 
-            if (previousPathSize > 0) {
-              car_s = end_path_s;
-              car_d = end_path_d;
-            }
-
-            NextVehicleInfo info = sensorFusion.getNextVehicleInfo(target_lane, car_s, delta_t);
+            NextVehicleInfo info = sensorFusion.getNextVehicleInfo(target_lane);
 
             if (info.hasNextVehicle) {
               cout << "Next vehicle distance=" << info.distance << "m, speed=" << info.speed << "m/s" << endl;

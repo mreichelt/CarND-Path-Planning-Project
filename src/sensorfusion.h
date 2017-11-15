@@ -13,14 +13,17 @@ struct NextVehicleInfo {
 class SensorFusion {
 public:
     vector<Vehicle> vehicles;
+    double s;
+    double delta_t;
+    vector<NextVehicleInfo> nextVehicleInfos;
 
-    explicit SensorFusion(const vector<vector<double>> &sensorFusionList);
+    explicit SensorFusion(const vector<vector<double>> &sensorFusionList, double s, double delta_t);
 
     vector<Vehicle> getVehicles(int lane);
 
-    NextVehicleInfo getNextVehicleInfo(int lane, double s, double delta_t);
+    NextVehicleInfo getNextVehicleInfo(int lane);
 
-    double getMinimalSpeedInFrontOf(int lane, double s, double delta_t);
+    double getMinimalSpeedInFrontOf(int lane);
 };
 
 #endif //PATH_PLANNING_SENSORFUSION_H

@@ -11,7 +11,7 @@ Vehicle::Vehicle(const std::vector<double> &sensorFusion)
     y(sensorFusion[2]),
     vx(sensorFusion[3]),
     vy(sensorFusion[4]),
-    s(normalizeS(sensorFusion[5])),
+    s(sensorFusion[5]),
     d(sensorFusion[6]) {}
 
 bool Vehicle::isValid() {

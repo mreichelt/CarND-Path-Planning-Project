@@ -47,6 +47,6 @@ double getVelocityChange(double current_speed, double desired_speed);
 
 const double MAX_S = 6945.554;
 
-double normalizeS(double s);
+double s_distance(double my_s, double other_s);
 
 #endif //PATH_PLANNING_TOOLS_H

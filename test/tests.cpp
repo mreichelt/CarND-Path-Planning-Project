@@ -56,7 +56,7 @@ TEST_CASE("parse all vehicles from sensor fusion data") {
     }
   };
 
-  SensorFusion sensorFusion(sensorFusionList);
+  SensorFusion sensorFusion(sensorFusionList, 0, 0.2);
   vector<Vehicle> vehicles = sensorFusion.vehicles;
   REQUIRE(vehicles.size() == 2);
   REQUIRE(vehicles[0].id == 0);
@@ -82,7 +82,7 @@ TEST_CASE("filter only valid vehicles") {
     }
   };
 
-  SensorFusion sensorFusion(sensorFusionList);
+  SensorFusion sensorFusion(sensorFusionList, 0, 0.2);
   vector<Vehicle> vehicles = sensorFusion.vehicles;
   REQUIRE(vehicles.size() == 1);
   REQUIRE(vehicles[0].id == 0);
@@ -185,7 +185,7 @@ TEST_CASE("find vehicles in lane") {
     }
   };
 
-  SensorFusion sensorFusion(sensorFusionList);
+  SensorFusion sensorFusion(sensorFusionList, 0, 0.2);
   REQUIRE(sensorFusion.getVehicles(0).size() == 0);
   REQUIRE(sensorFusion.getVehicles(1).size() == 1);
   REQUIRE(sensorFusion.getVehicles(2).size() == 1);
@@ -227,10 +227,20 @@ TEST_CASE("desired speed change is 0") {
   REQUIRE(getVelocityChange(mph2mps(25.0), mph2mps(25.0)) == Approx(0.0));
 }
 
-TEST_CASE("normalized s is the same value when no wraparound is needed") {
-  REQUIRE(normalizeS(6000.0) == Approx(6000.0));
+TEST_CASE("normal distance: car in front of me") {
+  REQUIRE(s_distance(10.0, 20.0) == Approx(10.0));
+  REQUIRE(s_distance(123.0, 173.0) == Approx(50.0));
 }
 
-TEST_CASE("normalize s that is larger than max") {
-  REQUIRE(normalizeS(6946.554) == Approx(1.0));
+TEST_CASE("normal distance: car behind me") {
+  REQUIRE(s_distance(20.0, 10.0) == Approx(-10.0));
+  REQUIRE(s_distance(123.0, 73.0) == Approx(-50.0));
+}
+
+TEST_CASE("wraparound distance: car in front of me") {
+  REQUIRE(s_distance(MAX_S - 5.0, 5.0) == Approx(10.0));
+}
+
+TEST_CASE("wraparound distance: car behind me") {
+  REQUIRE(s_distance(5.0, MAX_S - 5.0) == Approx(-10.0));
 }
