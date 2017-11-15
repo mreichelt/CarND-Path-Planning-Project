@@ -1,6 +1,6 @@
-# CarND-Path-Planning-Project
+[![Build Status](https://travis-ci.org/mreichelt/CarND-Path-Planning-Project.svg?branch=master)](https://travis-ci.org/mreichelt/CarND-Path-Planning-Project)
 
-![build status](https://travis-ci.org/mreichelt/CarND-Path-Planning-Project.svg?branch=master)
+# CarND-Path-Planning-Project
 
 ## Intro
 
