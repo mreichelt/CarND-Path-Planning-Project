@@ -46,15 +46,20 @@ double cost_collision(CostFunctionArgs &args) {
 
   // otherwise, check if there would be a collision
   vector<Vehicle> vehiclesInProposedLane = args.sensorFusion.getVehicles(args.proposed_lane);
-  double s_corridor_start = args.s - COLLISION_AVOIDANCE_BACK;
-  double s_corridor_end = args.s + COLLISION_AVOIDANCE_FRONT;
   for (Vehicle vehicleInProposedLane : vehiclesInProposedLane) {
     double predictedS = vehicleInProposedLane.getPredictedS(args.delta_t);
-    if (predictedS >= s_corridor_start && predictedS <= s_corridor_end) {
+    double distance = s_distance(args.s, predictedS);
+    if (distance > 0 && distance < COLLISION_AVOIDANCE_FRONT) {
+      // other vehicle is too close at the front
+      return 1.0;
+    }
+    if (distance < 0 && distance > -COLLISION_AVOIDANCE_BACK) {
+      // other vehicle is too close at the rear
       return 1.0;
     }
   }
 
+  // enough room for changing lanes
   return 0.0;
 }
 
