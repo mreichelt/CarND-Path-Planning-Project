@@ -16,6 +16,7 @@ public:
     double s;
     double delta_t;
     vector<NextVehicleInfo> nextVehicleInfos;
+    int best_lane;
 
     explicit SensorFusion(const vector<vector<double>> &sensorFusionList, double s, double delta_t);
 
