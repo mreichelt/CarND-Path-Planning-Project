@@ -1,5 +1,48 @@
 # CarND-Path-Planning-Project
-Self-Driving Car Engineer Nanodegree Program
+
+![build status](https://travis-ci.org/mreichelt/CarND-Path-Planning-Project.svg?branch=master)
+
+## Intro
+
+At the heart of a self-driving car is the ability to plan a path. The car has to make decisions on its own: It has
+to decide whether to change lanes, speed up or slow down and many other things.
+
+In this scenario the car drives on a highway. It should drive 50 MPH most of the time, unless prevented by traffic, and
+should change lanes when a better lane is available.
+
+## Let's get started
+
+To get started, I applied the suggestions of the walkthrough video of the path planning project.
+By adding the spline library I could already generate trajectories, and I grasped a concept of how the simulator
+and the algorithm interact.
+
+## Trajectory generation
+The trajectory generation was done pretty straightforward. TODO
+
+
+## Going the extra mile
+
+### Unit tests
+
+I am a big fan of testing, so I wrote unit tests to test at least some methods that I needed for the project.
+
+The tests can be found in the file [tests.cpp](tests.cpp) and can be run via the `test/Test` executable when successfully
+built with CMake. They can also be run with IntelliJ/CLion, which makes for a really nice development workflow:
+
+![Unit tests running in IntelliJ](001_unittests.png)
+
+### Continuous integration
+
+I tweaked the CMake files quite heavily because I added lots of source files. In order to make sure everything works,
+I set up TravisCI for this project. In order to have the correct C++ coding environment I created a
+[Docker image](https://hub.docker.com/r/mreichelt/carnd-cpp/) - for all future students to use and enjoy! 🎉
+
+Checkout the [.travis.yml](.travis.yml) config that you can copy and use for your own C++ projects!
+
+Also, you can see the [TravisCI page for this project](https://travis-ci.org/mreichelt/CarND-Path-Planning-Project).
+
+---
+
    
 ### Simulator.
 You can download the Term3 Simulator which contains the Path Planning Project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases).
