@@ -82,7 +82,7 @@ and choose the state that corresponds to the lowest cost. This is done every 3 s
 
 ## Enough talking - show me the video!
 
-Here you go:
+[Here you go](result.mp4):
 
 [![Path Planning result](002_video.png)](result.mp4)
 
