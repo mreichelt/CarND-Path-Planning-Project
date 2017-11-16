@@ -13,12 +13,97 @@ should change lanes when a better lane is available.
 ## Let's get started
 
 To get started, I applied the suggestions of the walkthrough video of the path planning project.
-By adding the spline library I could already generate trajectories, and I grasped a concept of how the simulator
+By adding the [spline library](http://kluge.in-chemnitz.de/opensource/spline/) I could already generate trajectories, and I grasped a concept of how the simulator
 and the algorithm interact.
 
 ## Trajectory generation
-The trajectory generation was done pretty straightforward. TODO
 
+To generate the trajectory I chose this approach:
+
+1. Get the latest planned orientation, speed and position of the car in Frenet `(s, d)` coordinates
+2. Generate two next waypoints with the corresponding `d` for the desired lane with 15 meter intervals
+3. Convert all of these target waypoints to absolute coordinates `(x, y)`
+4. Transform these `(x, y)` points to be relative to the cars location and orientation
+5. Generate a spline using these waypoints and take enough `(x', y')` coordinates to fill up the waypoint list -
+  using distances appropriate for keeping a desired speed to affect for the `20ms` time gap between waypoints
+6. Transform these relative `(x', y')` coordinates back to the absolute `(x, y)` coordinates
+
+To prevent my trajectories from having acceleration or jerk above the allowed limits, I chose a more naive approach: Namely
+keeping the changes in `speed` and `d` below certain thresholds, and always using the latest planned position and speed
+of the car to make sure the changes were small enough.
+
+This algorithm can be found in [main.cpp](src/main.cpp#L115-L205).
+
+## Collision avoidance
+
+In a first attempt I decided to always speed up when no other vehicle would be closer than 30m in front, and slow down
+continuously while staying in that corridor. This had two downsides:
+
+1. The car would speed up and slow down again all the time and never reach a stable position behind the next car
+2. When a car would drive very slowly the own car would nearly come to a stop.
+
+To solve this problem I wrote two functions:
+
+1. [`getFollowerSpeed`](src/tools.cpp#L160-L173) finds a desired speed based on the distance to and the speed of the next vehicle
+2. [`getVelocityChange`](src/tools.cpp#L180-L186) gets a velocity change value based on the wanted speed and the actual speed.
+
+These are then called in [main.cpp](src/main.cpp#L159-L162) to get the desired target speed for the trajectory generation.
+
+## Sensor fusion
+
+I didn't like that all sensor fusion data was stored in a `vector<vector<double>>`, so I created the classes
+[SensorFusion](src/sensorfusion.cpp) and [Vehicle](src/vehicle.cpp). That way I could access the parameters more safely
+and add some useful functions, like `getSpeed`, `isInLane` and `getPredictedS`, which I used in the behavior
+planning.
+
+## Behavior planning
+
+For planning the behavior I used two things: A state machine and a cost function. The code can be found in
+[planning.cpp](src/planning.cpp).
+
+For this project, I decided to use three states:
+
+1. Keep the current lane
+2. Change to the left lane
+3. Change to the right lane
+
+The [cost function](src/planning.cpp#L80-L95) I wrote used 3 cost functions:
+
+1. [cost_change_lane](src/planning.cpp#L12): Keeping the current lane in general is more comfortable than changing lanes.
+2. [cost_room_for_driving](src/planning.cpp#L28): A lane where the next vehicle is further away should be preferred.
+3. [cost_collision](src/planning.cpp#L42): State changes that lead to collisions should be avoided.
+
+I also used another cost function [cost_inefficiency](src/planning.cpp#L19) that was penalizing trajectories with a low
+minimal speed in front of the vehicle, but I decided on not using it because the `cost_room_for_driving` worked better
+for this project.
+
+In a method called [next_state](src/planning.cpp#L117-L133) I then call the cost function for each possible trajectory
+and choose the state that corresponds to the lowest cost. This is done every 3 seconds.
+
+## Enough talking - show me the video!
+
+Here you go:
+
+[![Path Planning result](002_video.png)](result.mp4)
+
+
+## Discussion
+
+In general, the assumptions I made in the project are simple enough to create a successful path planner. But I learned
+quite a few things on the way:
+
+- If I would do the project again I would choose a different approach, namely creating multiple jerk minimal trajectories
+(JMTs) for each state. This would allow me to speed up / slow down purely based on cost functions. In my project, I
+needed to write extra functionality to slow down when another vehicle was close, which can be error-prone and is not
+safe at all for real-world usage.
+- I didn't integrate a dedicated prediction of what the other vehicles were doing, which means that lane changes can
+only be detected when the action is nearly complete.
+- For the number of generated waypoints, I chose to decrease them from 50 to 20, effectively reducing the uncertainty
+from `50 * 0.02s = 1000ms` to `400ms`. Now I know that a latency of 400ms can be critical in decision making: We should
+in general plan ahead with, say, a latency of 40ms or 60ms, and then generate some more waypoints to account for planner
+latency.
+- Finally, I would use a different approach than the spline library, mainly because it forces the GPLv2 on all projects
+using it.
 
 ## Going the extra mile
 
